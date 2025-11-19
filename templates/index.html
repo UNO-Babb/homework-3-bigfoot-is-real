@@ -1,61 +1,399 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hexagon Tile Game</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medieval Mayhem</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
+<style>
+    body {
+        margin:0; 
+        font-family: 'Cinzel', serif; 
+        background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%);
+        color: #e6eef6;
+        background-attachment: fixed;
+    }
+    h1 {
+        text-align:center; 
+        font-family: "MedievalSharp", cursive; 
+        color: #f4d03f;
+        margin: 30px 0;
+        font-size: 3em;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(244, 208, 63, 0.5);
+        letter-spacing: 3px;
+    }
+    .container {
+        display:flex; 
+        padding:20px; 
+        gap:20px; 
+        max-width: 1400px; 
+        margin: 0 auto;
+    }
+    .board-container {
+        flex: 2;
+        background: rgba(15, 23, 36, 0.6);
+        padding: 20px;
+        border-radius: 12px;
+        border: 3px solid #8b6914;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .board {
+        display:grid; 
+        grid-template-columns: repeat(10, 60px); 
+        grid-gap:6px; 
+        justify-content:center;
+        margin-bottom: 20px;
+    }
+    .tile {
+        width:60px; 
+        height:60px; 
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        border:2px solid #4a5568; 
+        display:flex; 
+        align-items:center; 
+        justify-content:center; 
+        font-weight:bold; 
+        color:#cbd5e0;
+        font-size: 14px;
+        border-radius: 4px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        transition: all 0.3s;
+        position: relative;
+    }
+    .tile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(244, 208, 63, 0.3);
+    }
+    .player-panel {
+        flex:1; 
+        padding:20px; 
+        background: rgba(15, 23, 36, 0.8);
+        border-radius:12px;
+        border: 3px solid #8b6914;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .player-panel h2 {
+        color: #f4d03f;
+        font-size: 1.5em;
+        margin-top: 0;
+        text-align: center;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    .player-info {
+        background: rgba(26, 31, 46, 0.6);
+        padding: 12px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border-left: 4px solid #f4d03f;
+        transition: all 0.3s;
+    }
+    .player-info:hover {
+        transform: translateX(5px);
+        background: rgba(26, 31, 46, 0.9);
+    }
+    .current-turn {
+        background: rgba(244, 208, 63, 0.2);
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1.2em;
+        border: 2px solid #f4d03f;
+    }
+    .message-area {
+        margin:20px auto; 
+        background: rgba(15, 23, 36, 0.8);
+        padding:15px; 
+        height:140px; 
+        overflow-y:auto; 
+        border-radius:12px; 
+        max-width: 1400px;
+        border: 3px solid #8b6914;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .message-area div {
+        padding: 5px;
+        margin: 3px 0;
+        border-left: 3px solid #f4d03f;
+        padding-left: 10px;
+    }
+    button {
+        padding:12px 24px; 
+        margin:5px; 
+        border:none; 
+        border-radius:8px; 
+        cursor:pointer;
+        font-family: 'Cinzel', serif;
+        font-size: 1em;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    .dice {
+        background: linear-gradient(135deg, #f4d03f 0%, #d4af37 100%);
+        color:#1a1f2e;
+        box-shadow: 0 4px 12px rgba(244, 208, 63, 0.4);
+    }
+    .dice:hover {
+        background: linear-gradient(135deg, #ffd700 0%, #f4d03f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(244, 208, 63, 0.6);
+    }
+    .dice:active {
+        transform: translateY(0);
+    }
+    .dice-result {
+        margin-left: 15px;
+        font-weight: bold;
+        font-size: 1.3em;
+        color: #f4d03f;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    
+    /* Win Screen Styles */
+    .win-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.5s;
+    }
+    .win-overlay.show {
+        display: flex;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .win-card {
+        background: linear-gradient(135deg, #1a1f2e 0%, #0f1724 100%);
+        padding: 50px;
+        border-radius: 20px;
+        border: 5px solid #f4d03f;
+        box-shadow: 0 0 50px rgba(244, 208, 63, 0.5), inset 0 0 30px rgba(0,0,0,0.5);
+        text-align: center;
+        max-width: 600px;
+        animation: slideDown 0.6s;
+    }
+    @keyframes slideDown {
+        from { 
+            transform: translateY(-100px);
+            opacity: 0;
         }
-        #board {
-            display: grid;
-            grid-template-columns: repeat(10, 60px);
-            grid-template-rows: repeat(10, 52px);
-            gap: 2px;
+        to { 
+            transform: translateY(0);
+            opacity: 1;
         }
-        .hex {
-            width: 60px;
-            height: 52px;
-            background-color: lightgray;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            transition: background-color 0.2s;
-        }
-    </style>
+    }
+    .win-card h2 {
+        font-family: "MedievalSharp", cursive;
+        font-size: 3.5em;
+        color: #f4d03f;
+        margin: 0 0 20px 0;
+        text-shadow: 3px 3px 8px rgba(0,0,0,0.8), 0 0 30px rgba(244, 208, 63, 0.6);
+        animation: glow 2s infinite;
+    }
+    @keyframes glow {
+        0%, 100% { text-shadow: 3px 3px 8px rgba(0,0,0,0.8), 0 0 30px rgba(244, 208, 63, 0.6); }
+        50% { text-shadow: 3px 3px 8px rgba(0,0,0,0.8), 0 0 50px rgba(244, 208, 63, 0.9); }
+    }
+    .win-card .winner-icon {
+        font-size: 5em;
+        margin: 20px 0;
+        animation: bounce 1s infinite;
+    }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+    .win-card p {
+        font-size: 1.5em;
+        margin: 15px 0;
+        color: #e6eef6;
+    }
+    .win-card .final-score {
+        font-size: 2em;
+        color: #f4d03f;
+        font-weight: bold;
+        margin: 20px 0;
+    }
+    .reset-button {
+        background: linear-gradient(135deg, #c41e3a 0%, #8b1e3f 100%);
+        color: white;
+        padding: 15px 40px;
+        font-size: 1.2em;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(196, 30, 58, 0.4);
+    }
+    .reset-button:hover {
+        background: linear-gradient(135deg, #d32f48 0%, #c41e3a 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(196, 30, 58, 0.6);
+    }
+    
+    /* Scrollbar styling */
+    .message-area::-webkit-scrollbar {
+        width: 8px;
+    }
+    .message-area::-webkit-scrollbar-track {
+        background: rgba(26, 31, 46, 0.5);
+        border-radius: 10px;
+    }
+    .message-area::-webkit-scrollbar-thumb {
+        background: #f4d03f;
+        border-radius: 10px;
+    }
+    .message-area::-webkit-scrollbar-thumb:hover {
+        background: #ffd700;
+    }
+</style>
 </head>
 <body>
+<h1>⚔️ Medieval Mayhem ⚔️</h1>
 
-<div id="board">
-    <!-- Hexagonal tiles will be added here on clicks -->
+<!-- Win Screen Overlay -->
+<div class="win-overlay" id="winOverlay">
+    <div class="win-card">
+        <h2>Victory!</h2>
+        <div class="winner-icon" id="winnerIcon">👑</div>
+        <p><strong id="winnerName">Knight</strong> has conquered the realm!</p>
+        <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+        <button class="reset-button" onclick="resetGame()">Play Again</button>
+    </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<div class="container">
+    <div class="board-container">
+        <div class="board" id="board"></div>
+        <div style="text-align: center;">
+            <button class="dice" onclick="rollDice()">🎲 Roll Dice</button>
+            <span class="dice-result" id="diceResult"></span>
+        </div>
+    </div>
+    <div class="player-panel">
+        <h2>⚔️ Warriors ⚔️</h2>
+        <div id="playerPanel">
+            <!-- Player status will appear here -->
+        </div>
+        <div class="current-turn" id="currentTurn">
+            <strong>Current Turn:</strong> Knight
+        </div>
+    </div>
+</div>
+<div class="message-area" id="messages">
+    <!-- Game messages -->
+</div>
 <script>
-    $(document).ready(function() {
-        // Create an empty board of hex tiles
-        for (let i = 0; i < 100; i++) {
-            const hexTile = $('<div class="hex"></div>');
-            hexTile.data("clicked", false);  // Track if a tile has been clicked
-            $('#board').append(hexTile);
+    const boardSize = {{ board_size }};
+    let gameOver = false;
+    
+    function initBoard(){
+        const boardEl = document.getElementById('board');
+        boardEl.innerHTML = '';
+        for(let i=0; i<boardSize; i++){
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.id = 'tile'+i;
+            tile.textContent = i+1;
+            boardEl.appendChild(tile);
         }
-
-        // Add color to hex tiles on click
-        $('#board').on('click', '.hex', function() {
-            if (!$(this).data("clicked")) {  // Only allow one click per tile
-                $.getJSON('/add_tile', function(data) {
-                    $(this).css('background-color', data.color);
-                    $(this).data("clicked", true);  // Mark as clicked
-                }.bind(this));
+    }
+    
+    function updateUI(){
+        fetch('/state')
+        .then(res=>res.json())
+        .then(data=>{
+            // Check for winner
+            if (data.winner) {
+                showWinScreen(data.winner);
+                gameOver = true;
+                return;
             }
-        });
-    });
+            
+            // Clear board
+            for(let i=0; i<boardSize; i++){
+                const t = document.getElementById('tile'+i);
+                if (t) {
+                    t.textContent = i+1;
+                    t.style.background = 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)';
+                }
+            }
+            
+            // Draw players
+            data.players.forEach(p=>{
+                const pos = Math.max(0, Math.min(boardSize-1, p.position));
+                const el = document.getElementById('tile'+pos);
+                if (el) {
+                    el.textContent += ' ' + p.icon;
+                    el.style.background = p.color;
+                    el.style.borderColor = p.color;
+                    el.style.boxShadow = `0 0 15px ${p.color}`;
+                }
+            });
+            
+            // Update player panel
+            let panel = '';
+            data.players.forEach(p=>{
+                panel += `<div class="player-info">
+                    <div><b>${p.icon} ${p.name}</b></div>
+                    <div>Score: ${p.score} | Position: ${p.position+1}/${boardSize}</div>
+                </div>`;
+            });
+            document.getElementById('playerPanel').innerHTML = panel;
+            
+            // Update current turn
+            document.getElementById('currentTurn').innerHTML = 
+                `<strong>Current Turn:</strong> ${data.current_player}`;
+            
+            // Messages
+            const msgEl = document.getElementById('messages');
+            msgEl.innerHTML = data.messages.map(m=>'<div>'+m+'</div>').join('');
+            msgEl.scrollTop = msgEl.scrollHeight;
+        })
+        .catch(err => console.error('Error updating UI:', err));
+    }
+    
+    function rollDice(){
+        if (gameOver) return;
+        
+        fetch('/roll', {method:'POST'})
+        .then(res=>res.json())
+        .then(data=>{
+            document.getElementById('diceResult').textContent = '🎲 Rolled: '+data.roll;
+            updateUI();
+        })
+        .catch(err => console.error('Error rolling dice:', err));
+    }
+    
+    function showWinScreen(winner){
+        document.getElementById('winnerName').textContent = winner.name;
+        document.getElementById('winnerIcon').textContent = winner.icon;
+        document.getElementById('finalScore').textContent = winner.score;
+        document.getElementById('winOverlay').classList.add('show');
+    }
+    
+    function resetGame(){
+        fetch('/reset', {method:'POST'})
+        .then(res=>res.json())
+        .then(data=>{
+            document.getElementById('winOverlay').classList.remove('show');
+            gameOver = false;
+            document.getElementById('diceResult').textContent = '';
+            updateUI();
+        })
+        .catch(err => console.error('Error resetting game:', err));
+    }
+    
+    initBoard();
+    updateUI();
+    setInterval(()=>{
+        if (!gameOver) updateUI();
+    }, 2500);
 </script>
-
 </body>
 </html>
